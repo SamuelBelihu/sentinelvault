@@ -2,6 +2,7 @@ import json
 import os
 import getpass
 import base64
+import string
 from cryptography.fernet import InvalidToken
 from vault_engine import get_key, encrypt_data, decrypt_data, generate_vault_key
 
@@ -42,14 +43,35 @@ def change_master_password(data, current_vault_key):
 def clear_screen():
     # Use 'cls' for Windows CMD/PowerShell, 'clear' for Git Bash/Linux
     os.system('cls' if os.name == 'nt' else 'clear')
+def get_new_password():
+    """Check the criteria for a new password"""
+    while True:
+        score = 0
+        feedback = []
+        master_pwd = getpass.getpass("Create a new Master Password: ")
+        #length of the password 
+        if len(master_pwd) >= 8 and len(master_pwd) <= 30: score += 1
+        else: feedback.append("Password must be at least 8 characters")
+        #mixed case
+        if any(c.isupper() for c in master_pwd) and any(c.islower() for c in master_pwd): score += 1
+        else: feedback.append("use both Upper and lower case.")
+        if any(c.isdigit() for c in master_pwd): score += 1
+        else: feedback.append("Add at least one number.")
+        if any(c in string.punctuation for c in master_pwd): score += 1
+        else: feedback.append("Add a special character (e.g ., !, @, #).")
+        
+        if score == 4:
+            return master_pwd
+        else:
+            for suggestion in feedback:
+                print("-->"+ suggestion) 
 def main():
     print("\n" + "="*30 + "\n  SENTINEL Vault v1.0\n" + "="*30)
     
     data = load_vault_data()
-    master_pwd = getpass.getpass("Master Password: ")
-
     # --- INITIALIZATION OR UNLOCK ---
     if not data["header"]:
+        master_pwd = get_new_password()
         print("Initializing New Vault...")
         # Generate initial random salt and vault key
         salt = base64.b64encode(os.urandom(16)).decode()
@@ -63,6 +85,7 @@ def main():
         data["header"]["encrypted_vault_key"] = encrypt_data(vault_key.decode(), master_kdf_key)
         save_vault_data(data)
     else:
+        master_pwd = getpass.getpass("Master Password: ")
         try:
             # Pull the unique salt from the file to derive the key
             salt = data["header"]["salt"].encode()
