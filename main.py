@@ -5,7 +5,10 @@ import base64
 import string
 from cryptography.fernet import InvalidToken
 from vault_engine import get_key, encrypt_data, decrypt_data, generate_vault_key
+import time
+from pynput import keyboard
 
+kb_controller = keyboard.Controller()
 VAULT_FILE = "vault.json"
 
 def load_vault_data():
@@ -40,9 +43,11 @@ def change_master_password(data, current_vault_key):
     
     print("Master Password and Salt updated successfully!")
     return data
+
 def clear_screen():
     # Use 'cls' for Windows CMD/PowerShell, 'clear' for Git Bash/Linux
     os.system('cls' if os.name == 'nt' else 'clear')
+
 def get_new_password():
     """Check the criteria for a new password"""
     while True:
@@ -65,6 +70,16 @@ def get_new_password():
         else:
             for suggestion in feedback:
                 print("-->"+ suggestion) 
+def execute_outtype(password, app_name, delay=10):
+    print(f"Switch to {app_name} now! Typing in {delay} seconds...") 
+    # Visual countdown
+    for i in range(delay, 0, -1):
+        print(f"{i}... ", end="\r")
+        time.sleep(1)
+        
+    print("\nTyping now...")
+    kb_controller.type(password)
+    print("Done.")
 def main():
     print("\n" + "="*30 + "\n  SENTINEL Vault v1.0\n" + "="*30)
     
@@ -131,7 +146,8 @@ def main():
                     user = info.get("user", "N/A") if isinstance(info, dict) else "N/A"
                     
                     decrypted = decrypt_data(secret, vault_key)
-                    print(f"\n--- {app} ---\nUser: {user}\nPass: {decrypted}")
+                    print(f"\n--- {app} ---\nUser: {user}")
+                    execute_outtype(decrypted,app)
                     found = True
             if not found: print("No matches.")
 
