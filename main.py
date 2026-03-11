@@ -106,7 +106,12 @@ def main():
         if choice == "1":
             app = input("App Name: ")
             user = input("Username: ")
-            password = getpass.getpass(f"Password for {app}: ")
+            while True:
+                password = getpass.getpass(f"Password for {app}: ")
+                if password:
+                    break
+                else:
+                    print("Password cannot to empty")
             # Save as a dict for better organization
             encrypted_entry = {
                 "user": user,
