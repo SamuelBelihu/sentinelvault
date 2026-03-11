@@ -23,7 +23,7 @@ def save_vault_data(data):
 def change_master_password(data, current_vault_key):
     """Re-encrypts the Vault Key with a NEW Master Password and a NEW Salt."""
     print("\n--- Master Password Change ---")
-    new_pwd = getpass.getpass("Enter NEW Master Password: ")
+    new_pwd = get_new_password()
     confirm_pwd = getpass.getpass("Confirm NEW Master Password: ")
 
     if new_pwd != confirm_pwd:
